@@ -11,12 +11,13 @@ let resources = [];
 let rooted = [];
 let notRooted = [];
 let scripts ={
-	wmanager = "/scripts/control/wmanager.js",
+	wmanager : "/scripts/control/wmanager.js",
 };
 
 /** @param {NS} ns **/
 export async function main(ns) {
 	//Collect all servers data
+	ns.print("Running TreeServers");
 	servers = treeServers(ns);
 
 	//shove it somewhere that can be found
@@ -24,7 +25,11 @@ export async function main(ns) {
 
 	//find hackable servers
 	var myHack = ns.getHackingLevel();
+	ns.print("Finding and rooting systems");
 	findRootable(ns, myHack);
+
+	//find suitable targets
+	findTarget(ns, myHack);
 
 	//debug output
 	//ns.tprint(JSON.stringify(servers, null, 2));
@@ -125,7 +130,7 @@ function maxPorts(ns) {
 function findRootable(ns, hlevel) {
 	var myPorts = maxPorts(ns);
 
-	for( let i = notRooted.length - 1; i < notRooted.length; --i) {
+	for( let i = notRooted.length - 1; i > -1; --i) {
 		//ns.tprint(servers[i]);
 		if(notRooted[i].details.requiredHackingSkill <= hlevel && notRooted[i].details.numOpenPortsRequired <= myPorts) {
 			rootServer(servers[i].id);
@@ -151,7 +156,7 @@ function prepServer(ns, server) {
 
 }
 
-function findTarget(ns, servers, hlevel) {
+function findTarget(ns, hlevel) {
 	for( let i = 0; i < rooted.length; ++i){
 		if (rooted[i].id == "home" || (servers[i].id.indexOf(config.prefix) > -1 ))
 			continue;
