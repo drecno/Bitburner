@@ -1,6 +1,6 @@
 let config = {
   folder: 'control',
-  rootUrl: 'https://raw.githubusercontent.com/drecno/Bitburner/',
+  rootUrl: 'https://raw.githubusercontent.com/drecno/Bitburner/master/',
   serverPrefix: 'pserver',
 };
 /*
@@ -11,39 +11,6 @@ export async function main(ns) {
   ns.tprint('='.repeat(20));
   if (filesImported) {
     ns.tprint('Hey! Thank you for downloading the BitBurner Scripts.');
-    nslet config = {
-  folder: 'scripts',
-  rootUrl: 'https://raw.githubusercontent.com/Drecno/Bitburner/master/',
-  serverPrefix: 'Drecno',
-};
-
-
-async function importFiles(ns) {
-  let files = [
-    'mngr.ns'
-  ];
-  let filesImported = true;
-  for (let file of files) {
-    let remoteFileName = `${config.rootUrl}scripts/${file}`;
-    let result = await ns.wget(remoteFileName, `/${getFolder()}/${file}`);
-    filesImported = filesImported && result;
-    ns.tprint(`File: ${file}: ${result ? '✔️' : '❌'}`);
-  }
-  return filesImported;
-}
-
-export function getFolder() {
-  return config.folder;
-}
-
-export function getServerPrefix() {
-  return config.serverPrefix;
-}
-
-export function getHackScript() {
-  return `/${getFolder()}/hack.js`;
-}
-    );
   } else {
     ns.tprint(
       'You had some issues downloading files, please reach out to the repo maintainer or check your config.'
@@ -53,15 +20,7 @@ export function getHackScript() {
 
 async function importFiles(ns) {
   let files = [
-    'autoHack.js',
-    'autoRemoteHack.js',
-    'buyHacknet.js',
-    'dashboard.js',
-    'hack.js',
-    'hax.js',
-    'purchaseServers.js',
-    'remoteHack.js',
-    'serverStatus.js',
+    'mngr.ns',
   ];
   let filesImported = true;
   for (let file of files) {
