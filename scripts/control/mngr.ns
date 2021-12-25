@@ -1,13 +1,30 @@
+let filepack = ["/basic/w.js",
+				"/basic/g.js",
+				"/basic/h.js",];
+
+let config = {
+	prefix:"pserver",
+}
+
+let servers = [];
+let resources = [];
+let rooted = [];
+let notRooted = [];
+let scripts ={
+	wmanager = "/scripts/control/wmanager.js",
+};
+
 /** @param {NS} ns **/
 export async function main(ns) {
 	//Collect all servers data
-	var servers = treeServers(ns);
+	servers = treeServers(ns);
 
 	//shove it somewhere that can be found
 	localStorage.setItem("servers", JSON.stringify(servers));
 
 	//find hackable servers
-	findRootable(ns, servers);
+	var myHack = ns.getHackingLevel();
+	findRootable(ns, myHack);
 
 	//debug output
 	//ns.tprint(JSON.stringify(servers, null, 2));
@@ -44,8 +61,18 @@ function treeServers(ns) {
 				queue.push(host);
 				servers[index].children.push(host);
 				//Object.assign(servers[host], {"parent":currentNode});
-				servers.push({ "id": host, "parent": currentNode });
+				servers.push({ "id": host, "parent": currentNode, "targeted": false });
 			}
+		}
+
+		//if purchased server, add to resources
+		if(servers[index].details.purchasedByPlayer) {
+			resources.push(servers[index]);
+		}
+		if ( !s.purchasedByPlayer && s.hasAdminRights) {
+			rooted.push(servers[index]);
+		} else if (!s.hasAdminRights) {
+			notRooted.push(servers[index]);
 		}
 
 		queue.shift();
@@ -95,15 +122,67 @@ function maxPorts(ns) {
 	return ports;
 }
 
-function findRootable(ns, servers) {
+function findRootable(ns, hlevel) {
 	var myPorts = maxPorts(ns);
-	var myHack = ns.getHackingLevel();
 
-	for( let i = 0; i < servers.length; ++i) {
+	for( let i = notRooted.length - 1; i < notRooted.length; --i) {
 		//ns.tprint(servers[i]);
-		if(!servers[i].details.hasAdminRights && servers[i].details.requiredHackingSkill <= myHack && servers[i].details.numOpenPortsRequired <= myPorts) {
+		if(notRooted[i].details.requiredHackingSkill <= hlevel && notRooted[i].details.numOpenPortsRequired <= myPorts) {
 			rootServer(servers[i].id);
-			ns.tprint(servers[i]);
+			ns.print("Server ${servers[i].id has been rooted}");
+			rooted.push(servers[i]);
+			notRooted.pop(i);
 		}
 	}
+}
+
+function prepServer(ns, server) {
+	var minDiff = server.details.minDifficulty + 5
+	var time = ns.getWeakenTime(server);
+	var drop = ns.weakenAnalyze(1);
+	var totalRuns = Math.ceil((server.hackDifficulty - minDiff) / drop);
+	var resource = getResource(scripts["wmanager"], 1);
+
+	if ( resource != null ) {
+		ns.exec(scripts["wmanager"], r[0].id, 1, server, totalRuns, time);
+	}
+	else
+		ns.print("Not enough resources");
+
+}
+
+function findTarget(ns, servers, hlevel) {
+	for( let i = 0; i < rooted.length; ++i){
+		if (rooted[i].id == "home" || (servers[i].id.indexOf(config.prefix) > -1 ))
+			continue;
+		else {
+			if( rooted[i].details.requiredHackingSkill <= hlevel && !rooted[i].targeted) {
+				prepServer(ns, rooted[i]);
+			}
+		}
+	}
+}
+
+function getResource(ns, script, threads) {
+	var size = ns.getScriptRam(script);
+	var left = threads;
+	let resources = []
+	for( let i = 0; i < resources.length; ++i) {
+		let freeRam = resources[i].details.maxRam - resources[i].details.ramUsed;
+		if( freeRam >= size ) {
+			let runnable = Math.floor(freeRam / size)
+			if( runnable == 0)
+				continue;
+			else if( runnable < threads ) {
+				runnable = threads;
+				resources.push({s:resources[i].id, t:runnable});
+			}
+			else {
+				resources.push({s:resources[i].id, t:threads});
+				return resources;
+			}
+		}
+	}
+
+	return null;
 }
