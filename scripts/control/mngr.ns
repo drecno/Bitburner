@@ -134,7 +134,7 @@ function findRootable(ns, hlevel) {
 		//ns.tprint(servers[i]);
 		if(notRooted[i].details.requiredHackingSkill <= hlevel && notRooted[i].details.numOpenPortsRequired <= myPorts) {
 			rootServer(servers[i].id);
-			ns.print("Server ${servers[i].id has been rooted}");
+			ns.print(`Server ${servers[i].id} has been rooted`);
 			rooted.push(servers[i]);
 			notRooted.pop(i);
 		}
@@ -146,10 +146,11 @@ function prepServer(ns, server) {
 	var time = ns.getWeakenTime(server.id);
 	var drop = ns.weakenAnalyze(1);
 	var totalRuns = Math.ceil((server.details.hackDifficulty - minDiff) / drop);
-	var resource = getResource(scripts["wmanager"], 1);
+	var resource = getResource(ns, scripts["wmanager"], 1);
 
 	if ( resource != null ) {
-		ns.exec(scripts["wmanager"], r[0].id, 1, server, totalRuns, time);
+		ns.print(`Running prep on ${server.id}`)
+		ns.exec(scripts["wmanager"], resource[0].id, 1, server.id, totalRuns, time);
 	}
 	else
 		ns.print("Not enough resources");
@@ -171,7 +172,7 @@ function findTarget(ns, hlevel) {
 function getResource(ns, script, threads) {
 	var size = ns.getScriptRam(script);
 	var left = threads;
-	let resources = []
+	
 	for( let i = 0; i < resources.length; ++i) {
 		let freeRam = resources[i].details.maxRam - resources[i].details.ramUsed;
 		if( freeRam >= size ) {
