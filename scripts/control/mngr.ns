@@ -143,9 +143,9 @@ function findRootable(ns, hlevel) {
 
 function prepServer(ns, server) {
 	var minDiff = server.details.minDifficulty + 5
-	var time = ns.getWeakenTime(server);
+	var time = ns.getWeakenTime(server.id);
 	var drop = ns.weakenAnalyze(1);
-	var totalRuns = Math.ceil((server.hackDifficulty - minDiff) / drop);
+	var totalRuns = Math.ceil((server.details.hackDifficulty - minDiff) / drop);
 	var resource = getResource(scripts["wmanager"], 1);
 
 	if ( resource != null ) {
