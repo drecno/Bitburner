@@ -1,0 +1,108 @@
+/** @param {NS} ns **/
+export async function main(ns) {
+	//Collect all servers data
+	var servers = treeServers(ns);
+
+	//shove it somewhere that can be found
+	localStorage.setItem("servers", JSON.stringify(servers));
+
+	//find hackable servers
+	findRootable(ns, servers);
+
+	//debug output
+	ns.tprint(JSON.stringify(servers, null, 2));
+}
+
+function treeServers(ns) {
+	var servers = [];
+
+	var queue = []
+	queue.push("home");
+
+	//Object.assign(servers, {"home":{"parent":null}});
+	servers.push({ "id": "home", "parent": null })
+
+	while (queue.length > 0) {
+		//get currentNode
+		var currentNode = queue[0];
+		var index = servers.findIndex(s => s.id == currentNode)
+		//get currentNode parent
+		var parent = servers[index].parent;
+
+		//add server details
+		var s = ns.getServer(currentNode);
+		//Object.assign(servers[currentNode],{"details":s});
+		servers[index].details = s;
+
+		//find children and create new server entry
+		//Object.assign(servers[currentNode],{"children":[]});
+		servers[index].children = []
+		var neighbors = ns.scan(currentNode);
+		for (let l in neighbors) {
+			if (parent == null || neighbors[l] != parent) {
+				let host = neighbors[l]
+				queue.push(host);
+				servers[index].children.push(host);
+				//Object.assign(servers[host], {"parent":currentNode});
+				servers.push({ "id": host, "parent": currentNode });
+			}
+		}
+
+		queue.shift();
+	}
+
+	return servers;
+}
+
+function rootServer(ns, server) {
+	if (ns.fileExists("BruteSSH.exe", "home")) {
+		ns.brutessh(server);
+	}
+	if (ns.fileExists("FTPCrack.exe", "home")) {
+		ns.ftpcrack(server);
+	}
+	if (ns.fileExists("relaySMTP.exe", "home")) {
+		ns.relaysmtp(server);
+	}
+	if (ns.fileExists("HTTPWorm.exe", "home")) {
+		ns.httpworm(server);
+	}
+	if (ns.fileExists("SQLInject.exe", "home")) {
+		ns.sqlinject(server);
+	}
+	ns.nuke(server);
+}
+
+function maxPorts(ns) {
+	var ports = 0;
+
+	if (ns.fileExists("BruteSSH.exe", "home")) {
+		ports++;
+	}
+	if (ns.fileExists("FTPCrack.exe", "home")) {
+		ports++;
+	}
+	if (ns.fileExists("relaySMTP.exe", "home")) {
+		ports++;
+	}
+	if (ns.fileExists("HTTPWorm.exe", "home")) {
+		ports++;
+	}
+	if (ns.fileExists("SQLInject.exe", "home")) {
+		ports++;
+	}
+
+	return ports;
+}
+
+function findRootable(ns, servers) {
+	var myPorts = maxPorts(ns);
+	var myHack = ns.getHackingLevel();
+
+	for( let i = 0; i < servers.length; ++i) {
+		if(!servers[i].s.hasAdminRights && servers[i].s.requiredHackingSkill <= myHack && servers[i].s.numOpenPortsRequired <= myPorts) {
+			rootServer(servers[i].id);
+			ns.tprint(servers[i]);
+		}
+	}
+}
