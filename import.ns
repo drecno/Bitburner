@@ -1,3 +1,5 @@
+//original file: https://raw.githubusercontent.com/ChaelCodes/bitburner-scripts/main/import.js
+
 let config = {
   folder: 'scripts',
   rootUrl: 'https://raw.githubusercontent.com/drecno/Bitburner/master/',
