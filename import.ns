@@ -1,5 +1,5 @@
 let config = {
-  folder: 'control',
+  folder: '/',
   rootUrl: 'https://raw.githubusercontent.com/drecno/Bitburner/master/',
   serverPrefix: 'pserver',
 };
