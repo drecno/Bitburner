@@ -10,7 +10,7 @@ export async function main(ns) {
 	findRootable(ns, servers);
 
 	//debug output
-	ns.tprint(JSON.stringify(servers, null, 2));
+	//ns.tprint(JSON.stringify(servers, null, 2));
 }
 
 function treeServers(ns) {
@@ -100,7 +100,8 @@ function findRootable(ns, servers) {
 	var myHack = ns.getHackingLevel();
 
 	for( let i = 0; i < servers.length; ++i) {
-		if(!servers[i].s.hasAdminRights && servers[i].s.requiredHackingSkill <= myHack && servers[i].s.numOpenPortsRequired <= myPorts) {
+		//ns.tprint(servers[i]);
+		if(!servers[i].details.hasAdminRights && servers[i].details.requiredHackingSkill <= myHack && servers[i].details.numOpenPortsRequired <= myPorts) {
 			rootServer(servers[i].id);
 			ns.tprint(servers[i]);
 		}
